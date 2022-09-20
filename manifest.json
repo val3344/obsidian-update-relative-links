@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-update-relative-links",
+	"name": "Update Relative Links",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
+	"description": "Update relative links.",
+	"author": "val",
+	"authorUrl": "https://github.com/val3344/obsidian-update-relative-links",
 	"isDesktopOnly": false
 }
