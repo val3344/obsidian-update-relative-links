@@ -38,7 +38,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                     return null;
                 }
 
-                const newLink = path.relative(file.parent.path, linkFile.path);
+                const newLink = file.parent.path === '/' ? linkFile.path : path.relative(file.parent.path, linkFile.path);
 
                 if (link === newLink) {
                     return null;
