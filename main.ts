@@ -1,4 +1,4 @@
-import { Notice, Plugin, TAbstractFile } from 'obsidian';
+import { Notice, Plugin, TFile } from 'obsidian';
 import { posix as path } from 'path';
 
 export default class UpdateRelativeLinksPlugin extends Plugin {
@@ -25,15 +25,17 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                 return;
             }
 
-            setTimeout(() => replace(file, true), 100);
+            if (file instanceof TFile) {
+                setTimeout(() => replace(file, true), 100);
+            }
         }));
 
-        function replace(file: TAbstractFile, notice: boolean) {
-            const metadata = metadataCache.getCache(file.path);
+        function replace(file: TFile, notice: boolean) {
+            const metadata = metadataCache.getFileCache(file);
             const links = [...(metadata?.links ?? []), ...(metadata?.embeds ?? [])];
             const replacePairs = links.map(({ link, original }) => {
                 const linkFile = metadataCache.getFirstLinkpathDest(link, file.path);
-                
+
                 if (!linkFile) {
                     return null;
                 }
@@ -52,17 +54,17 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                 return Promise.resolve();
             }
 
-            return vault.adapter.read(file.path).then(content => {
+            return vault.read(file).then(content => {
                 const replacedContent = replacePairs.reduce((tmpContent, pair) => {
                     return pair?.length === 2 ? tmpContent.replace(pair[0], pair[1]) : tmpContent;
                 }, content);
 
-                return vault.adapter.write(file.path, replacedContent);
+                return vault.modify(file, replacedContent);
             }).then(() => {
                 const msg = `Update ${replacePairs.length} links in ${file.path}.`;
                 console.log(msg);
                 if (notice) {
-                    new Notice(msg)
+                    new Notice(msg);
                 }
             }).catch(err => {
                 console.error(err);
