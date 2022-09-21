@@ -6,5 +6,5 @@
 	"description": "Update relative links.",
 	"author": "val",
 	"authorUrl": "https://github.com/val3344/obsidian-update-relative-links",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
