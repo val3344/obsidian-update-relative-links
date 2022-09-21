@@ -44,7 +44,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                     return null;
                 }
 
-                const newOriginal = original.replace(link, newLink);
+                const newOriginal = replaceOriginal(original, link, newLink);
                 return [original, newOriginal];
             }).filter(pair => pair);
 
@@ -70,6 +70,21 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                     new Notice('Update links error, see console.');
                 }
             });
+        }
+
+        function replaceOriginal(original: string, link: string, newLink: string) {
+            let newOriginal = replaceWithFormat(original, link, newLink, s => s.replace(/ /g, '%20'));
+            if (original === newOriginal) {
+                newOriginal = replaceWithFormat(original, link, newLink, encodeURI);
+            }
+            if (original === newOriginal) {
+                newOriginal = original.replace(/^(!?\[.*?\]).*$/, `$1(${encodeURI(newLink)})`)
+            }
+            return newOriginal;
+        }
+
+        function replaceWithFormat(str: string, from: string, to: string, format: (s: string) => string) {
+            return str.replace(format(from), format(to));
         }
     }
 }
