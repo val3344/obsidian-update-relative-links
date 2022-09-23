@@ -9,12 +9,19 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             id: 'update-all-relative-links',
             name: 'Update all relative links',
             callback() {
-                const promises = vault.getMarkdownFiles().map((file, idx, arr) => {
-                    console.log(`start ${idx + 1}/${arr.length}`);
-                    return replace(file, false).finally(() => console.log(`end ${idx + 1}/${arr.length}`));
-                });
+                const promises = vault.getMarkdownFiles().map(file => replace(file, false));
 
-                Promise.all(promises).finally(() => console.log('all done'));
+                Promise.all(promises).then(linkCounts => {
+                    const updatedLinkCounts = linkCounts.filter(count => count > 0);
+
+                    const linkCount = updatedLinkCounts.reduce((sum, count) => sum + count, 0);
+                    const fileCount = updatedLinkCounts.length;
+
+                    new Notice(`Update ${linkCount} links in ${fileCount} file${fileCount > 1 ? 's' : ''}.`);
+                }).catch(err => {
+                    new Notice('Update links error, see console.');
+                    console.error(err);
+                });
             }
         });
 
@@ -51,7 +58,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             }).filter(pair => pair);
 
             if (!replacePairs?.length) {
-                return Promise.resolve();
+                return Promise.resolve(0);
             }
 
             return vault.read(file).then(content => {
@@ -66,11 +73,13 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                 if (notice) {
                     new Notice(msg);
                 }
+                return replacePairs.length;
             }).catch(err => {
                 console.error(err);
                 if (notice) {
                     new Notice('Update links error, see console.');
                 }
+                return Promise.reject(err);
             });
         }
 
