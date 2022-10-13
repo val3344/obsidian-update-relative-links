@@ -37,7 +37,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             }
         }));
 
-        function replace(file: TFile, notice: boolean) {
+        async function replace(file: TFile, notice: boolean) {
             const metadata = metadataCache.getFileCache(file);
             const links = [...(metadata?.links ?? []), ...(metadata?.embeds ?? [])];
             const replacePairs = links.map(({ link, original }) => {
@@ -58,29 +58,31 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             }).filter(pair => pair);
 
             if (!replacePairs?.length) {
-                return Promise.resolve(0);
+                return 0;
             }
 
-            return vault.read(file).then(content => {
+            try {
+                const content = await vault.read(file);
+
                 const replacedContent = replacePairs.reduce((tmpContent, pair) => {
                     return pair?.length === 2 ? tmpContent.replace(pair[0], pair[1]) : tmpContent;
                 }, content);
 
-                return vault.modify(file, replacedContent);
-            }).then(() => {
+                await vault.modify(file, replacedContent);
+
                 const msg = `Update ${replacePairs.length} links in ${file.path}.`;
                 console.log(msg);
                 if (notice) {
                     new Notice(msg);
                 }
                 return replacePairs.length;
-            }).catch(err => {
-                console.error(err);
+            } catch (e) {
+                console.error(e);
                 if (notice) {
                     new Notice('Update links error, see console.');
                 }
-                return Promise.reject(err);
-            });
+                throw e;
+            }
         }
 
         function replaceOriginal(original: string, link: string, newLink: string) {
