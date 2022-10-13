@@ -1,5 +1,5 @@
 {
-	"id": "obsidian-update-relative-links",
+	"id": "update-relative-links",
 	"name": "Update Relative Links",
 	"version": "1.0.3",
 	"minAppVersion": "0.15.0",
