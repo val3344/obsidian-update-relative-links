@@ -1,5 +1,5 @@
 import { Notice, Plugin, TFile } from 'obsidian';
-import { posix as path } from 'path';
+import { dirname, relative } from './lib/path';
 
 export default class UpdateRelativeLinksPlugin extends Plugin {
     async onload() {
@@ -28,7 +28,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
         this.registerEvent(vault.on('rename', (file, oldPath) => {
             if (!oldPath
                 || !file.path.toLocaleLowerCase().endsWith('.md')
-                || file.parent.path === path.dirname(oldPath)) {
+                || file.parent.path === dirname(oldPath)) {
                 return;
             }
 
@@ -47,7 +47,7 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
                     return null;
                 }
 
-                const newLink = file.parent.path === '/' ? linkFile.path : path.relative(file.parent.path, linkFile.path);
+                const newLink = file.parent.path === '/' ? linkFile.path : relative(file.path, linkFile.path);
 
                 if (link === newLink) {
                     return null;
