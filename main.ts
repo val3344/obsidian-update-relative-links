@@ -41,19 +41,20 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             const metadata = metadataCache.getFileCache(file);
             const links = [...(metadata?.links ?? []), ...(metadata?.embeds ?? [])];
             const replacePairs = links.map(({ link, original }) => {
-                const linkFile = metadataCache.getFirstLinkpathDest(link, file.path);
+                const linkPath = link.replace(/#.*$/, '');
+                const linkFile = metadataCache.getFirstLinkpathDest(linkPath, file.path);
 
                 if (!linkFile) {
                     return null;
                 }
 
-                const newLink = file.parent?.path === '/' ? linkFile.path : relative(file.path, linkFile.path);
+                const newLinkPath = file.parent?.path === '/' ? linkFile.path : relative(file.path, linkFile.path);
 
-                if (link === newLink) {
+                if (linkPath === newLinkPath) {
                     return null;
                 }
 
-                const newOriginal = replaceOriginal(original, link, newLink);
+                const newOriginal = replaceOriginal(original, linkPath, newLinkPath);
                 return [original, newOriginal];
             }).filter(pair => pair);
 
