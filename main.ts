@@ -42,6 +42,11 @@ export default class UpdateRelativeLinksPlugin extends Plugin {
             const links = [...(metadata?.links ?? []), ...(metadata?.embeds ?? [])];
             const replacePairs = links.map(({ link, original }) => {
                 const linkPath = link.replace(/#.*$/, '');
+
+                if (!linkPath) {
+                    return null;
+                }
+
                 const linkFile = metadataCache.getFirstLinkpathDest(linkPath, file.path);
 
                 if (!linkFile) {
