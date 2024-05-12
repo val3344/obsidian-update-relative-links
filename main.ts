@@ -1,27 +1,67 @@
-import { Notice, Plugin, TFile } from 'obsidian';
+import { App, Modal, Notice, Plugin, Setting, TFile } from 'obsidian';
 import { dirname, relative } from './lib/path';
+
+class ConfirmModal extends Modal {
+    content: string;
+    onConfirm: () => void;
+
+    constructor(app: App, content: string, onConfirm: () => void) {
+        super(app);
+
+        this.content = content;
+        this.onConfirm = onConfirm;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+
+        contentEl.createEl('h1', { text: 'Update Releate Links Plugin' });
+        contentEl.createEl('p', { text: this.content });
+
+        new Setting(contentEl)
+            .addButton((btn) => btn
+                .setButtonText('Yes')
+                .setCta()
+                .onClick(() => {
+                    this.close();
+                    this.onConfirm();
+                }))
+            .addButton((btn) => btn
+                .setButtonText('No')
+                .onClick(() => {
+                    this.close();
+                }));
+    }
+
+    onClose() {
+        this.contentEl.empty();
+    }
+}
 
 export default class UpdateRelativeLinksPlugin extends Plugin {
     async onload() {
-        const { metadataCache, vault } = this.app;
+        const { app } = this;
+        const { metadataCache, vault } = app;
 
         this.addCommand({
             id: 'update-all-relative-links',
             name: 'Update all relative links',
             callback() {
-                const promises = vault.getMarkdownFiles().map(file => replace(file, false));
+                new ConfirmModal(app, 'Are you sure you want to convert all relative links?', () => {
+                    const promises = vault.getMarkdownFiles().map(file => replace(file, false));
 
-                Promise.all(promises).then(linkCounts => {
-                    const updatedLinkCounts = linkCounts.filter(count => count > 0);
+                    Promise.all(promises).then(linkCounts => {
+                        const updatedLinkCounts = linkCounts.filter(count => count > 0);
 
-                    const linkCount = updatedLinkCounts.reduce((sum, count) => sum + count, 0);
-                    const fileCount = updatedLinkCounts.length;
+                        const linkCount = updatedLinkCounts.reduce((sum, count) => sum + count, 0);
+                        const fileCount = updatedLinkCounts.length;
 
-                    new Notice(`Update ${linkCount} links in ${fileCount} file${fileCount > 1 ? 's' : ''}.`);
-                }).catch(err => {
-                    new Notice('Update links error, see console.');
-                    console.error(err);
-                });
+                        new Notice(`Update ${linkCount} links in ${fileCount} file${fileCount > 1 ? 's' : ''}.`);
+                    }).catch(err => {
+                        new Notice('Update links error, see console.');
+                        console.error(err);
+                    });
+                }).open();
             }
         });
 
