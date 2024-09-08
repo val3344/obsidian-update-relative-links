@@ -1,7 +1,7 @@
 {
 	"id": "update-relative-links",
 	"name": "Update Relative Links",
-	"version": "2.1.2",
+	"version": "2.1.3",
 	"minAppVersion": "0.15.0",
 	"description": "Update relative links.",
 	"author": "val",
